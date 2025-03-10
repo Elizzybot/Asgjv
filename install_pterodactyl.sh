@@ -1,33 +1,37 @@
 #!/bin/bash
 
-# Pterodactyl Panel Auto Installer (No Root)
-# Works on Railway, Replit, and other cloud services
-
-echo "Starting Pterodactyl Installation..."
-
-# Update & Install Dependencies
-apt update && apt install -y unzip curl php-cli php-mbstring git
+# Install dependencies
+echo "Installing dependencies..."
+apt update && apt install -y unzip curl php-cli php-mbstring git sqlite3
 
 # Clone Pterodactyl Panel
+echo "Cloning Pterodactyl Panel..."
 git clone https://github.com/pterodactyl/panel.git
 cd panel
 
-# Install PHP Dependencies
+# Install PHP dependencies
+echo "Installing PHP dependencies..."
 curl -sS https://getcomposer.org/installer | php
 php composer.phar install --no-dev --optimize-autoloader
 
-# Set Up Environment
+# Set up environment
+echo "Setting up environment..."
 cp .env.example .env
 php artisan key:generate
 
-# Configure Database (Using SQLite for No-Root Setup)
+# Use SQLite for database (No MySQL required)
+echo "Configuring SQLite database..."
 echo "DB_CONNECTION=sqlite" >> .env
 touch database/database.sqlite
 
-# Run Database Migrations
+# Run migrations
+echo "Migrating database..."
 php artisan migrate --seed --force
 
-# Create Admin User (Replace with your details)
+# Create Admin User
+echo "Creating admin user..."
 php artisan p:user:make --admin --email="admin@example.com" --password="SecurePass123"
 
-echo "Pterodactyl Installed Successfully!"
+# Start the server
+echo "Starting Pterodactyl Panel..."
+php artisan serve --host=0.0.0.0 --port=8080
